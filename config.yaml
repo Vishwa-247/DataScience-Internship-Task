@@ -1,0 +1,85 @@
+# =============================================================================
+# Sales Forecasting System — Single source of truth for all parameters
+# Loaded by every module via src.utils.config.load_config()
+# =============================================================================
+
+data:
+  path: data/raw/sales.xlsx
+  freq: W-SUN                  # Weekly resampling anchored on Sunday
+  date_col: Date
+  target_col: Total
+  group_col: State
+  category_col: Category
+
+preprocessing:
+  imputation: linear           # linear | ffill | bfill (chained: linear -> ffill -> bfill)
+  outlier_strategy: cap        # cap | none
+  iqr_multiplier: 1.5
+
+features:
+  lags: [1, 7, 30]
+  rolling_windows: [4, 8, 13]
+  rolling_stats: [mean, std]
+  fourier_terms: 3             # K = number of sin/cos pairs for annual seasonality
+  holidays: true               # US federal holidays as binary flag
+  time_features: [week_of_year, month, quarter, year]
+
+cv:
+  initial_train_weeks: 104     # 2 years before first test fold
+  horizon: 8                   # weeks to predict per fold (matches forecast horizon)
+  step: 4                      # weeks to advance the train window per fold
+  max_folds: 5
+  min_folds: 3
+
+models:
+  arima:
+    enabled: true
+    seasonal: true
+    m: 52                      # weekly seasonality period
+    auto_arima: true           # use pmdarima if installed; else statsmodels grid
+  prophet:
+    enabled: true
+    yearly_seasonality: true
+    weekly_seasonality: true
+    daily_seasonality: false
+    holidays_country: US
+  xgboost:
+    enabled: true
+    multi_step: direct         # direct (one model per h) | recursive
+    optuna_trials: 50
+    early_stopping_rounds: 50
+  lstm:
+    enabled: true
+    lookback: 52
+    hidden: 64
+    layers: 2
+    dropout: 0.1
+    epochs: 50
+    patience: 5
+    batch_size: 16
+    lr: 0.001
+
+ensemble:
+  top_k: 2
+  weighting: inverse_rmse      # inverse_rmse | uniform
+
+forecast:
+  horizon_weeks: 8
+  ci_method: residual_bootstrap
+  ci_alpha: 0.10               # 90% CI
+
+artifacts:
+  registry_path: artifacts/registry
+
+logging:
+  log_dir: logs
+  level: INFO
+
+api:
+  host: 0.0.0.0
+  port: 8000
+
+dashboard:
+  api_url: http://localhost:8000
+
+seed: 42

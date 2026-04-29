@@ -1,0 +1,69 @@
+# =============================================================================
+# Sales Forecasting System — .gitignore
+# =============================================================================
+
+# --- Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# --- Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# --- Data (raw datasets stay local; never commit)
+data/raw/*.xlsx
+data/raw/*.csv
+data/raw/*.parquet
+data/interim/
+data/processed/
+
+# --- Model artefacts (versioned registry stays local)
+artifacts/registry/v*/
+artifacts/registry/manifest.json
+artifacts/**/shap_*.png
+artifacts/**/*.pkl
+artifacts/**/*.joblib
+
+# --- Logs
+logs/
+*.log
+
+# --- IDE / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# --- Node / React
+node_modules/
+dashboard/react-app/node_modules/
+dashboard/react-app/dist/
+dashboard/react-app/.vite/
+
+# --- Streamlit
+.streamlit/secrets.toml
+
+# --- Local overrides
+.env
+.env.local
+config.local.yaml

@@ -1,0 +1,7 @@
+# =============================================================================
+# PyTorch — CUDA 12.1 wheel (GTX 1650, compute 7.5)
+# Install:  pip install -r requirements-torch.txt --index-url https://download.pytorch.org/whl/cu121
+# Driver requirement: NVIDIA driver >= 525.60 (verified 555.97 on this machine)
+# =============================================================================
+
+torch>=2.4,<2.6
