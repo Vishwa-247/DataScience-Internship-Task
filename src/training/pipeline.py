@@ -74,7 +74,18 @@ def _train_one_state(
     horizon = config["forecast"]["horizon_weeks"]
     ensemble_cfg = config["ensemble"]
 
-    folds = list(walk_forward_splits(series, config))
+    try:
+        folds = list(walk_forward_splits(series, config))
+    except ValueError as e:
+        logger.warning("[%s] Skipping — insufficient data for CV: %s", state, e)
+        return {
+            "state": state,
+            "selected": [],
+            "weights": {},
+            "mean_rmse": {},
+            "n_folds": 0,
+            "error": str(e),
+        }
     n_folds = len(folds)
     logger.info("[%s] Starting CV — %d folds, %d weeks", state, n_folds, len(series))
 
@@ -103,6 +114,13 @@ def _train_one_state(
                     if fold_idx == 0:
                         model.optimize(train, test, n_trials=config["models"]["xgboost"].get("optuna_trials", 50))
                         xgb_best_params = model.params.copy()
+                        # Clip unstable Optuna params to safe ranges
+                        for _k in ["subsample", "colsample_bytree"]:
+                            if _k in xgb_best_params:
+                                xgb_best_params[_k] = float(
+                                    max(0.3, min(1.0, xgb_best_params[_k]))
+                                )
+                        logger.debug("[%s] XGBoost best params after clip: %s", state, xgb_best_params)
                     elif xgb_best_params is not None:
                         model.params.update(xgb_best_params)
 
@@ -126,6 +144,18 @@ def _train_one_state(
     for model_name, scores_list in fold_scores.items():
         rmse_vals = [s["rmse"] for s in scores_list]
         mean_rmse[model_name] = float(np.mean(rmse_vals))
+
+    # Warn if XGBoost fold-0 RMSE is suspiciously high (bad HPO)
+    xgb_fold_rmses = [s["rmse"] for s in fold_scores["xgboost"]]
+    if len(xgb_fold_rmses) > 1:
+        fold0_rmse = xgb_fold_rmses[0]
+        other_mean = float(np.mean(xgb_fold_rmses[1:]))
+        if other_mean > 0 and fold0_rmse > 2.0 * other_mean:
+            logger.warning(
+                "[%s] XGBoost fold-0 RMSE (%.0f) is >2x mean of other folds (%.0f) "
+                "-- Optuna may have over-fit to fold-0. Consider increasing n_trials.",
+                state, fold0_rmse, other_mean,
+            )
 
     ranked = sorted(mean_rmse, key=mean_rmse.get)
     top_k = ensemble_cfg.get("top_k", 2)

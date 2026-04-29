@@ -109,6 +109,14 @@ class LSTMModel:
         A 10 % validation split is held out from the **end** of the training
         windows for early stopping.
         """
+        min_required = self.lookback + self._horizon + self.batch_size
+        if len(series) < min_required:
+            raise ValueError(
+                f"LSTMModel needs at least {min_required} weeks of data "
+                f"(lookback={self.lookback} + horizon={self._horizon} + batch_size={self.batch_size}), "
+                f"got {len(series)}."
+            )
+
         from src.utils.seed import set_seed
         set_seed(self._seed)
 

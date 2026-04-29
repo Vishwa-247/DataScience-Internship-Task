@@ -191,11 +191,12 @@ def predict(state: str = Query(...), horizon: int = Query(8, ge=1, le=52)):
 
     forecast = []
     for i, dt in enumerate(first.index[:horizon]):
+        ci_width = ci_std * float(np.sqrt(i + 1))  # widens with horizon step
         forecast.append(ForecastPoint(
             date=str(dt.date()),
             yhat=round(float(ensemble[i]), 2),
-            yhat_lower=round(float(ensemble[i] - 1.96 * ci_std), 2),
-            yhat_upper=round(float(ensemble[i] + 1.96 * ci_std), 2),
+            yhat_lower=round(float(ensemble[i] - 1.96 * ci_width), 2),
+            yhat_upper=round(float(ensemble[i] + 1.96 * ci_width), 2),
         ))
 
     return PredictResponse(

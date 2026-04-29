@@ -14,7 +14,7 @@ data:
 preprocessing:
   imputation: linear           # linear | ffill | bfill (chained: linear -> ffill -> bfill)
   outlier_strategy: cap        # cap | none
-  iqr_multiplier: 1.5
+  iqr_multiplier: 3.0
 
 features:
   lags: [1, 7, 30]

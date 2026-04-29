@@ -10,8 +10,8 @@ features ``X[t]``.
 single fold (typically fold 1).  Best params are stored and reused by
 subsequent ``fit()`` calls on all folds.
 
-**SHAP:** ``explain()`` returns SHAP values from a ``TreeExplainer`` on the
-*h = 1* model only.
+**SHAP:** ``explain()`` returns SHAP values from a ``shap.Explainer`` (PermutationExplainer)
+on the *h = 1* model only. Uses ``shap.maskers.Independent`` for XGBoost 3.x compatibility.
 """
 
 from __future__ import annotations
