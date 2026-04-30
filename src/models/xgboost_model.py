@@ -177,7 +177,7 @@ class XGBoostModel:
     # -- SHAP -----------------------------------------------------------------
 
     def explain(self, X: pd.DataFrame | None = None) -> np.ndarray:
-        """Compute SHAP values for the h=1 model via ``TreeExplainer``.
+        """Compute SHAP values for the h=1 model via ``shap.Explainer`` (PermutationExplainer).
 
         Args:
             X: Feature matrix to explain.  Defaults to full training features.
