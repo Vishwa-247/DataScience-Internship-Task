@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import traceback
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -122,7 +123,20 @@ def _load_state(state: str) -> dict:
 def health():
     ver = _registry.latest_version() if _registry else None
     trained = _registry.list_states(ver) if ver else []
-    return {"status": "ok", "version": ver, "trained_states": len(trained)}
+    # Staleness: parse vYYYYMMDD_HHMMSS from version string
+    weeks_stale = None
+    if ver and ver.startswith("v") and len(ver) >= 16:
+        try:
+            trained_at = datetime.strptime(ver[1:16], "%Y%m%d_%H%M%S")
+            weeks_stale = (datetime.now() - trained_at).days // 7
+        except ValueError:
+            pass
+    resp = {"status": "ok", "version": ver, "trained_states": len(trained)}
+    if weeks_stale is not None:
+        resp["model_age_weeks"] = weeks_stale
+        if weeks_stale > 8:
+            resp["warning"] = f"Models are {weeks_stale} weeks old — consider retraining"
+    return resp
 
 
 @app.get("/states")
@@ -166,6 +180,7 @@ def train_status(job_id: str):
 
 @app.get("/predict", response_model=PredictResponse)
 def predict(state: str = Query(...), horizon: int = Query(8, ge=1, le=52)):
+    state = state.strip().title()
     bundle = _load_state(state)
     weights = bundle["weights"]
     meta = bundle["meta"]
@@ -209,6 +224,7 @@ def predict(state: str = Query(...), horizon: int = Query(8, ge=1, le=52)):
 
 @app.get("/predict/breakdown", response_model=BreakdownResponse)
 def predict_breakdown(state: str = Query(...), horizon: int = Query(8)):
+    state = state.strip().title()
     bundle = _load_state(state)
     models_out: dict[str, list[dict]] = {}
     for m_name, m_obj in bundle["models"].items():
@@ -228,6 +244,8 @@ def predict_breakdown(state: str = Query(...), horizon: int = Query(8)):
 
 @app.get("/metrics")
 def metrics(state: str = Query(None)):
+    if state:
+        state = state.strip().title()
     ver = _get_version()
     trained = _registry.list_states(ver)
 
@@ -262,6 +280,7 @@ def metrics(state: str = Query(None)):
 
 @app.get("/backtest", response_model=BacktestResponse)
 def backtest(state: str = Query(...)):
+    state = state.strip().title()
     bundle = _load_state(state)
     cv = bundle["cv"]
     fold_details = cv.get("fold_details")
