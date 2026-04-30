@@ -67,3 +67,20 @@ dashboard/react-app/.vite/
 .env
 .env.local
 config.local.yaml
+
+# --- IDE config (Windsurf / Cursor / VS Code)
+.windsurf/
+.cursor/
+.vscode/settings.json
+
+# --- Execution plans / scratch HTML files
+*.html
+60hr_execution_plan.html
+
+# --- Root-level Excel / data files
+Forecasting*.xlsx
+*.xlsx
+
+# --- OS thumbnails / cache
+desktop.ini
+$RECYCLE.BIN/

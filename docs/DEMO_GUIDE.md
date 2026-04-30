@@ -10,7 +10,7 @@ End-to-end reference for the live demo. All commands copy-paste ready.
 # Terminal 1 — Start API
 cd "D:\Data Science Internship"
 .\.venv\Scripts\Activate.ps1
-uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
+.\.venv\Scripts\python.exe -m uvicorn src.api.app:app --host 127.0.0.1 --port 8000 --reload
 
 # Terminal 2 — Start React dashboard
 cd "D:\Data Science Internship\dashboard\react-app"
@@ -18,7 +18,7 @@ npm run dev
 ```
 
 Open in browser:
-- API docs: http://localhost:8000/docs
+- API docs: http://127.0.0.1:8000/docs
 - Dashboard: http://localhost:5173
 
 ---
@@ -69,7 +69,7 @@ artifacts/registry/v20260429_214318/states/
 
 ### [1:20 – 2:00] API Live Demo — MOST IMPRESSIVE PART
 
-Open http://localhost:8000/docs (Swagger UI)
+Open http://127.0.0.1:8000/docs (Swagger UI)
 
 **Step 1 — Health check**
 ```
@@ -240,8 +240,8 @@ GET  /backtest?state=X              → 40 rows actual vs all 4 model prediction
 
 | Problem | Fix |
 |---|---|
-| API returns 503 | Run `uvicorn src.api.app:app --port 8000 --reload` |
+| API returns 503 | Run `python -m uvicorn src.api.app:app --host 127.0.0.1 --port 8000 --reload` |
 | Dashboard blank | Check API is running, check browser console for CORS errors |
 | State not found | Run `GET /states` to confirm the state name exactly |
-| React npm error | Run `cd dashboard/react-app && npm install` first |
-| Port 8000 in use | `Stop-Process -Id (netstat -ano | findstr :8000)` |
+| React npm error | Run `cd dashboard/react-app` then `npm install` first |
+| Port 8000 in use | `Stop-Process -Id (Get-NetTCPConnection -LocalPort 8000).OwningProcess` |
