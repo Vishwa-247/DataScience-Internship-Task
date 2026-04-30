@@ -30,10 +30,15 @@ export default function App() {
     <div className="layout">
       {/* Sidebar */}
       <aside className="sidebar">
-        <h1>Sales Forecast</h1>
-
         <div>
-          <label>State</label>
+          <h1>Sales Forecast</h1>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+            Beverages · 43 US States · 2019–2023
+          </div>
+        </div>
+
+        <div className="sidebar-section">
+          <div className="section-label">Select State</div>
           <select
             value={selectedState}
             onChange={e => setSelectedState(e.target.value)}
@@ -44,11 +49,19 @@ export default function App() {
           </select>
         </div>
 
-        <div className={`status ${health ? '' : 'offline'}`}>
+        {health && (
+          <div className="sidebar-section">
+            <div className="section-label">Registry Info</div>
+            <div className="info-row"><strong>{health.trained_states}</strong> states trained</div>
+            <div className="info-row" style={{ fontSize: 10, wordBreak: 'break-all' }}>
+              v{health.version?.slice(1, 9) || '—'}
+            </div>
+          </div>
+        )}
+
+        <div className={`status ${health ? '' : 'offline'}`} style={{ marginTop: 'auto' }}>
           <span className="dot" />
-          {health
-            ? `API v${health.version || '?'} · ${health.trained_states} state(s)`
-            : 'API offline'}
+          {health ? 'API online' : 'API offline'}
         </div>
       </aside>
 
